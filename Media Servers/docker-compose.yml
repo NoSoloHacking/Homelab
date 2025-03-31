@@ -1,6 +1,6 @@
 services:
   plex:
-    image: plexinc/pms-docker:public  # Especifica la imagen de Docker para Plex Media Server.
+    image: plexinc/pms-docker:latest  # Especifica la imagen de Docker para Plex Media Server.
     container_name: plex  # Asigna el nombre "plex" al contenedor.
     hostname: PlexNSH  # Asigna el nombre de host "PlexNSH" al contenedor.
     # networks:  # Comentado: Posible configuración de red (no se usa en este momento).
@@ -36,7 +36,7 @@ services:
       - TZ=${TZ}  # Establece la zona horaria del contenedor.
 
   jellyfin:
-    image: lscr.io/linuxserver/jellyfin  # Especifica la imagen de Docker para Jellyfin.
+    image: lscr.io/linuxserver/jellyfin:latest  # Especifica la imagen de Docker para Jellyfin.
     container_name: jellyfin  # Asigna el nombre "jellyfin" al contenedor.
     networks:  # Conecta el contenedor a la red "media".
       - media
@@ -53,7 +53,7 @@ services:
     restart: unless-stopped  # Reinicia el contenedor automáticamente a menos que se detenga explícitamente.
 
   transmission:
-    image: lscr.io/linuxserver/transmission  # Especifica la imagen de Docker para Transmission.
+    image: lscr.io/linuxserver/transmission:latest  # Especifica la imagen de Docker para Transmission.
     container_name: transmission  # Asigna el nombre "transmission" al contenedor.
     networks:  # Conecta el contenedor a la red "media".
       - media
@@ -71,7 +71,7 @@ services:
     restart: unless-stopped  # Reinicia el contenedor automáticamente a menos que se detenga explícitamente.
 
   radarr:
-    image: lscr.io/linuxserver/radarr  # Especifica la imagen de Docker para Radarr.
+    image: lscr.io/linuxserver/radarr:latest  # Especifica la imagen de Docker para Radarr.
     container_name: radarr  # Asigna el nombre "radarr" al contenedor.
     networks:  # Conecta el contenedor a la red "media".
       - media
@@ -87,7 +87,7 @@ services:
     restart: unless-stopped  # Reinicia el contenedor automáticamente a menos que se detenga explícitamente.
 
   sonarr:
-    image: lscr.io/linuxserver/sonarr  # Especifica la imagen de Docker para Sonarr.
+    image: lscr.io/linuxserver/sonarr:latest  # Especifica la imagen de Docker para Sonarr.
     container_name: sonarr  # Asigna el nombre "sonarr" al contenedor.
     networks:  # Conecta el contenedor a la red "media".
       - media
@@ -103,7 +103,7 @@ services:
     restart: unless-stopped  # Reinicia el contenedor automáticamente a menos que se detenga explícitamente.
 
   jackett:
-    image: lscr.io/linuxserver/jackett  # Especifica la imagen de Docker para Jackett.
+    image: lscr.io/linuxserver/jackett:latest  # Especifica la imagen de Docker para Jackett.
     container_name: jackett  # Asigna el nombre "jackett" al contenedor.
     networks:  # Conecta el contenedor a la red "media".
       - media
@@ -119,7 +119,7 @@ services:
     restart: unless-stopped  # Reinicia el contenedor automáticamente a menos que se detenga explícitamente.
 
   lidarr:
-    image: lscr.io/linuxserver/lidarr  # Especifica la imagen de Docker para Lidarr.
+    image: lscr.io/linuxserver/lidarr:latest  # Especifica la imagen de Docker para Lidarr.
     container_name: lidarr  # Asigna el nombre "lidarr" al contenedor.
     networks:  # Conecta el contenedor a la red "media".
       - media
