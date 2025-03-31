@@ -1,0 +1,255 @@
+services:
+  plex:
+    image: plexinc/pms-docker:public
+    container_name: plex
+    hostname: PlexNSH
+      #   networks:
+      # - media
+    volumes:
+      - ${DESCARGAS}:/media
+      - /home/carlos/docker/plex/config:/config
+      - ${DESCARGAS}:/downloads
+    environment:
+      - PLEX_CLAIM=${PLEX_CLAIM}
+      - TZ=${TZ}
+      - VERSION=docker
+      - PUID=${PUID}
+      - PGID=${PGID}
+        #    ports:
+        #      - "32400:32400"
+    network_mode: host
+    restart: unless-stopped
+
+  audiobookshelf:
+    image: ghcr.io/advplyr/audiobookshelf:latest
+    container_name: Audiobookshelf
+    ports:
+      - 13378:80
+    volumes:
+      - ${DESCARGAS}/audiobooks:/audiobooks
+      - ${DESCARGAS}/podcasts:/podcasts
+      - ${DESCARGAS}/ebooks:/ebooks
+      - ${DESCARGAS}/comics:/comics
+      - /home/carlos/docker/audiobookshelf/config:/config
+      - /home/carlos/docker/audiobookshelf/metadata:/metadata
+    environment:
+      - TZ=${TZ}
+
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin
+    container_name: jellyfin
+    networks:
+      - media
+    volumes:
+      - /home/carlos/docker/jellyfin/config:/config
+      - ${DESCARGAS}:/downloads
+      - /home/carlos/docker/jellyfin/media:/media
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+    ports:
+      - "8096:8096"
+    restart: unless-stopped
+
+  transmission:
+    image: lscr.io/linuxserver/transmission
+    container_name: transmission
+    networks:
+      - media
+    volumes:
+      - /home/carlos/docker/transmission/config:/config
+      - ${DESCARGAS}:/downloads
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+    ports:
+      - "9091:9091"
+      - "51413:51413"
+      - "51413:51413/udp"
+    restart: unless-stopped
+
+  radarr:
+    image: lscr.io/linuxserver/radarr
+    container_name: radarr
+    networks:
+      - media
+    volumes:
+      - /home/carlos/docker/radarr/config:/config
+      - ${DESCARGAS}:/downloads
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+    ports:
+      - "7878:7878"
+    restart: unless-stopped
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr
+    container_name: sonarr
+    networks:
+      - media
+    volumes:
+      - /home/carlos/docker/sonarr/config:/config
+      - ${DESCARGAS}:/downloads
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+    ports:
+      - "8989:8989"
+    restart: unless-stopped
+
+  jackett:
+    image: lscr.io/linuxserver/jackett
+    container_name: jackett
+    networks:
+      - media
+    volumes:
+      - /home/carlos/docker/jackett/config:/config
+      - ${DESCARGAS}:/downloads
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+    ports:
+      - "9117:9117"
+    restart: unless-stopped
+
+  lidarr:
+    image: lscr.io/linuxserver/lidarr
+    container_name: lidarr
+    networks:
+      - media
+    volumes:
+      - /home/carlos/docker/lidarr/config:/config
+      - ${DESCARGAS}:/downloads
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+    ports:
+      - "8686:8686"
+    restart: unless-stopped
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    networks:
+      - media
+    volumes:
+      - /home/carlos/docker/prowlarr/config:/config
+      - ${DESCARGAS}:/downloads
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+    ports:
+      - "9696:9696"
+    restart: unless-stopped
+
+  readarr:
+    image: lscr.io/linuxserver/readarr:develop
+    container_name: readarr
+    networks:
+      - media
+    volumes:
+      - /home/carlos/docker/readarr/config:/config
+      - ${DESCARGAS}:/downloads
+    environment:
+      - TZ=${TZ}
+      - PUID=${PUID}
+      - PGID=${PGID}
+    ports:
+      - "8787:8787"
+    restart: unless-stopped
+
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower
+    networks:
+      - media
+    environment:
+      - WATCHTOWER_POLL_INTERVAL=172800  # 2 days in seconds (60*60*24*2)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # Needed for Watchtower to access Docker API
+    restart: unless-stopped
+
+
+  pinepods_db:
+    container_name: DB_Pinepods
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - /home/carlos/docker/pinepods/pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  valkey:
+    container_name: Valkey_Pinepods
+    image: valkey/valkey:8-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  pinepods:
+    container_name: Pinepods
+    image: madeofpendletonwool/pinepods:latest
+    ports:
+      - "8040:8040"
+    environment:
+      # Basic Server Info
+      SEARCH_API_URL: 'https://search.pinepods.online/api/search'
+      PEOPLE_API_URL: 'https://people.pinepods.online'
+      # Default Admin User Information
+      USERNAME: ${USERNAME}
+      PASSWORD: ${PASSWORD}
+      FULLNAME: Mis Podcasts
+      EMAIL: user@pinepods.online
+      # Database Vars
+      DB_TYPE: postgresql
+      DB_HOST: pinepods_db
+      DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: ${POSTGRES_DB}
+      # Valkey Settings
+      VALKEY_HOST: valkey
+      VALKEY_PORT: 6379
+      # Enable or Disable Debug Mode for additional Printing
+      DEBUG_MODE: false
+    volumes:
+      # Mount the download and backup locations on the server
+      - /home/carlos/docker/pinepods/podcasts:/opt/pinepods/downloads
+      - /home/carlos/docker/pinepods/backups:/opt/pinepods/backups
+    restart: unless-stopped
+    depends_on:
+      - pinepods_db
+      - valkey
+
+  lazylibrarian:
+    image: lscr.io/linuxserver/lazylibrarian:latest
+    container_name: lazylibrarian
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - DOCKER_MODS=linuxserver/mods:universal-calibre|linuxserver/mods:lazylibrarian-ffmpeg #optional
+    volumes:
+      - ${DOCKER}/docker/lazylibrarian/data:/config
+      - ${DOCKER}/lazylibrarian/downloads/:/downloads
+      - ${DOCKER}/lazylibrarian/books:/books #optional
+    ports:
+      - "5299:5299"
+    restart: unless-stopped
+
+networks:
+  media:
+    driver: bridge
