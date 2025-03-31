@@ -1,255 +1,254 @@
 services:
   plex:
-    image: plexinc/pms-docker:public
-    container_name: plex
-    hostname: PlexNSH
-      #   networks:
-      # - media
-    volumes:
-      - ${DESCARGAS}:/media
-      - /home/carlos/docker/plex/config:/config
-      - ${DESCARGAS}:/downloads
-    environment:
-      - PLEX_CLAIM=${PLEX_CLAIM}
-      - TZ=${TZ}
-      - VERSION=docker
-      - PUID=${PUID}
-      - PGID=${PGID}
-        #    ports:
-        #      - "32400:32400"
-    network_mode: host
-    restart: unless-stopped
+    image: plexinc/pms-docker:public  # Especifica la imagen de Docker para Plex Media Server.
+    container_name: plex  # Asigna el nombre "plex" al contenedor.
+    hostname: PlexNSH  # Asigna el nombre de host "PlexNSH" al contenedor.
+    # networks:  # Comentado: Posible configuración de red (no se usa en este momento).
+    # - media
+    volumes:  # Define los volúmenes para montar directorios locales en el contenedor.
+      - ${DESCARGAS}:/media  # Monta el directorio de descargas en /media dentro del contenedor.
+      - ${DOCKER}/plex/config:/config  # Monta el directorio de configuración de Plex en /config.
+      - ${DESCARGAS}:/downloads  # Monta el directorio de descargas en /downloads dentro del contenedor.
+    environment:  # Define las variables de entorno para el contenedor.
+      - PLEX_CLAIM=${PLEX_CLAIM}  # Proporciona el código de reclamación para Plex.
+      - TZ=${TZ}  # Establece la zona horaria del contenedor.
+      - VERSION=docker  # Establece la versión a "docker".
+      - PUID=${PUID}  # Establece el ID de usuario del proceso dentro del contenedor.
+      - PGID=${PGID}  # Establece el ID de grupo del proceso dentro del contenedor.
+    # ports:  # Comentado: Posible configuración de puertos (no se usa en este momento).
+    # - "32400:32400"
+    network_mode: host  # Usa el modo de red "host" (el contenedor usa la red del host directamente).
+    restart: unless-stopped  # Reinicia el contenedor automáticamente a menos que se detenga explícitamente.
 
   audiobookshelf:
-    image: ghcr.io/advplyr/audiobookshelf:latest
-    container_name: Audiobookshelf
-    ports:
+    image: ghcr.io/advplyr/audiobookshelf:latest  # Especifica la imagen de Docker para Audiobookshelf.
+    container_name: Audiobookshelf  # Asigna el nombre "Audiobookshelf" al contenedor.
+    ports:  # Publica el puerto 80 del contenedor en el puerto 13378 del host.
       - 13378:80
-    volumes:
-      - ${DESCARGAS}/audiobooks:/audiobooks
-      - ${DESCARGAS}/podcasts:/podcasts
-      - ${DESCARGAS}/ebooks:/ebooks
-      - ${DESCARGAS}/comics:/comics
-      - /home/carlos/docker/audiobookshelf/config:/config
-      - /home/carlos/docker/audiobookshelf/metadata:/metadata
-    environment:
-      - TZ=${TZ}
+    volumes:  # Define los volúmenes para montar directorios locales en el contenedor.
+      - ${DESCARGAS}/audiobooks:/audiobooks  # Monta el directorio de audiolibros en /audiobooks.
+      - ${DESCARGAS}/podcasts:/podcasts  # Monta el directorio de podcasts en /podcasts.
+      - ${DESCARGAS}/ebooks:/ebooks  # Monta el directorio de ebooks en /ebooks.
+      - ${DESCARGAS}/comics:/comics  # Monta el directorio de comics en /comics.
+      - ${DOCKER}/audiobookshelf/config:/config  # Monta el directorio de configuración de Audiobookshelf en /config.
+      - ${DOCKER}/audiobookshelf/metadata:/metadata  # Monta el directorio de metadatos de Audiobookshelf en /metadata.
+    environment:  # Define las variables de entorno para el contenedor.
+      - TZ=${TZ}  # Establece la zona horaria del contenedor.
 
   jellyfin:
-    image: lscr.io/linuxserver/jellyfin
-    container_name: jellyfin
-    networks:
+    image: lscr.io/linuxserver/jellyfin  # Especifica la imagen de Docker para Jellyfin.
+    container_name: jellyfin  # Asigna el nombre "jellyfin" al contenedor.
+    networks:  # Conecta el contenedor a la red "media".
       - media
-    volumes:
-      - /home/carlos/docker/jellyfin/config:/config
-      - ${DESCARGAS}:/downloads
-      - /home/carlos/docker/jellyfin/media:/media
-    environment:
-      - TZ=${TZ}
-      - PUID=${PUID}
-      - PGID=${PGID}
-    ports:
+    volumes:  # Define los volúmenes para montar directorios locales en el contenedor.
+      - ${DOCKER}/jellyfin/config:/config  # Monta el directorio de configuración de Jellyfin en /config.
+      - ${DESCARGAS}:/downloads  # Monta el directorio de descargas en /downloads.
+      - ${DOCKER}/jellyfin/media:/media  # Monta el directorio de medios de Jellyfin en /media.
+    environment:  # Define las variables de entorno para el contenedor.
+      - TZ=${TZ}  # Establece la zona horaria del contenedor.
+      - PUID=${PUID}  # Establece el ID de usuario del proceso dentro del contenedor.
+      - PGID=${PGID}  # Establece el ID de grupo del proceso dentro del contenedor.
+    ports:  # Publica el puerto 8096 del contenedor en el puerto 8096 del host.
       - "8096:8096"
-    restart: unless-stopped
+    restart: unless-stopped  # Reinicia el contenedor automáticamente a menos que se detenga explícitamente.
 
   transmission:
-    image: lscr.io/linuxserver/transmission
-    container_name: transmission
-    networks:
+    image: lscr.io/linuxserver/transmission  # Especifica la imagen de Docker para Transmission.
+    container_name: transmission  # Asigna el nombre "transmission" al contenedor.
+    networks:  # Conecta el contenedor a la red "media".
       - media
-    volumes:
-      - /home/carlos/docker/transmission/config:/config
-      - ${DESCARGAS}:/downloads
-    environment:
-      - TZ=${TZ}
-      - PUID=${PUID}
-      - PGID=${PGID}
-    ports:
-      - "9091:9091"
-      - "51413:51413"
-      - "51413:51413/udp"
-    restart: unless-stopped
+    volumes:  # Define los volúmenes para montar directorios locales en el contenedor.
+      - ${DOCKER}/transmission/config:/config  # Monta el directorio de configuración de Transmission en /config.
+      - ${DESCARGAS}:/downloads  # Monta el directorio de descargas en /downloads.
+    environment:  # Define las variables de entorno para el contenedor.
+      - TZ=${TZ}  # Establece la zona horaria del contenedor.
+      - PUID=${PUID}  # Establece el ID de usuario del proceso dentro del contenedor.
+      - PGID=${PGID}  # Establece el ID de grupo del proceso dentro del contenedor.
+    ports:  # Publica los puertos del contenedor en el host.
+      - "9091:9091"  # Puerto para la interfaz web.
+      - "51413:51413"  # Puerto para el tráfico TCP de BitTorrent.
+      - "51413:51413/udp"  # Puerto para el tráfico UDP de BitTorrent.
+    restart: unless-stopped  # Reinicia el contenedor automáticamente a menos que se detenga explícitamente.
 
   radarr:
-    image: lscr.io/linuxserver/radarr
-    container_name: radarr
-    networks:
+    image: lscr.io/linuxserver/radarr  # Especifica la imagen de Docker para Radarr.
+    container_name: radarr  # Asigna el nombre "radarr" al contenedor.
+    networks:  # Conecta el contenedor a la red "media".
       - media
-    volumes:
-      - /home/carlos/docker/radarr/config:/config
-      - ${DESCARGAS}:/downloads
-    environment:
-      - TZ=${TZ}
-      - PUID=${PUID}
-      - PGID=${PGID}
-    ports:
+    volumes:  # Define los volúmenes para montar directorios locales en el contenedor.
+      - ${DOCKER}/radarr/config:/config  # Monta el directorio de configuración de Radarr en /config.
+      - ${DESCARGAS}:/downloads  # Monta el directorio de descargas en /downloads.
+    environment:  # Define las variables de entorno para el contenedor.
+      - TZ=${TZ}  # Establece la zona horaria del contenedor.
+      - PUID=${PUID}  # Establece el ID de usuario del proceso dentro del contenedor.
+      - PGID=${PGID}  # Establece el ID de grupo del proceso dentro del contenedor.
+    ports:  # Publica el puerto 7878 del contenedor en el puerto 7878 del host.
       - "7878:7878"
-    restart: unless-stopped
+    restart: unless-stopped  # Reinicia el contenedor automáticamente a menos que se detenga explícitamente.
 
   sonarr:
-    image: lscr.io/linuxserver/sonarr
-    container_name: sonarr
-    networks:
+    image: lscr.io/linuxserver/sonarr  # Especifica la imagen de Docker para Sonarr.
+    container_name: sonarr  # Asigna el nombre "sonarr" al contenedor.
+    networks:  # Conecta el contenedor a la red "media".
       - media
-    volumes:
-      - /home/carlos/docker/sonarr/config:/config
-      - ${DESCARGAS}:/downloads
-    environment:
-      - TZ=${TZ}
-      - PUID=${PUID}
-      - PGID=${PGID}
-    ports:
+    volumes:  # Define los volúmenes para montar directorios locales en el contenedor.
+      - ${DOCKER}/sonarr/config:/config  # Monta el directorio de configuración de Sonarr en /config.
+      - ${DESCARGAS}:/downloads  # Monta el directorio de descargas en /downloads.
+    environment:  # Define las variables de entorno para el contenedor.
+      - TZ=${TZ}  # Establece la zona horaria del contenedor.
+      - PUID=${PUID}  # Establece el ID de usuario del proceso dentro del contenedor.
+      - PGID=${PGID}  # Establece el ID de grupo del proceso dentro del contenedor.
+    ports:  # Publica el puerto 8989 del contenedor en el puerto 8989 del host.
       - "8989:8989"
-    restart: unless-stopped
+    restart: unless-stopped  # Reinicia el contenedor automáticamente a menos que se detenga explícitamente.
 
   jackett:
-    image: lscr.io/linuxserver/jackett
-    container_name: jackett
-    networks:
+    image: lscr.io/linuxserver/jackett  # Especifica la imagen de Docker para Jackett.
+    container_name: jackett  # Asigna el nombre "jackett" al contenedor.
+    networks:  # Conecta el contenedor a la red "media".
       - media
-    volumes:
-      - /home/carlos/docker/jackett/config:/config
-      - ${DESCARGAS}:/downloads
-    environment:
-      - TZ=${TZ}
-      - PUID=${PUID}
-      - PGID=${PGID}
-    ports:
+    volumes:  # Define los volúmenes para montar directorios locales en el contenedor.
+      - ${DOCKER}/jackett/config:/config  # Monta el directorio de configuración de Jackett en /config.
+      - ${DESCARGAS}:/downloads  # Monta el directorio de descargas en /downloads.
+    environment:  # Define las variables de entorno para el contenedor.
+      - TZ=${TZ}  # Establece la zona horaria del contenedor.
+      - PUID=${PUID}  # Establece el ID de usuario del proceso dentro del contenedor.
+      - PGID=${PGID}  # Establece el ID de grupo del proceso dentro del contenedor.
+    ports:  # Publica el puerto 9117 del contenedor en el puerto 9117 del host.
       - "9117:9117"
-    restart: unless-stopped
+    restart: unless-stopped  # Reinicia el contenedor automáticamente a menos que se detenga explícitamente.
 
   lidarr:
-    image: lscr.io/linuxserver/lidarr
-    container_name: lidarr
-    networks:
+    image: lscr.io/linuxserver/lidarr  # Especifica la imagen de Docker para Lidarr.
+    container_name: lidarr  # Asigna el nombre "lidarr" al contenedor.
+    networks:  # Conecta el contenedor a la red "media".
       - media
-    volumes:
-      - /home/carlos/docker/lidarr/config:/config
-      - ${DESCARGAS}:/downloads
-    environment:
-      - TZ=${TZ}
-      - PUID=${PUID}
-      - PGID=${PGID}
-    ports:
+    volumes:  # Define los volúmenes para montar directorios locales en el contenedor.
+      - ${DOCKER}/lidarr/config:/config  # Monta el directorio de configuración de Lidarr en /config.
+      - ${DESCARGAS}:/downloads  # Monta el directorio de descargas en /downloads.
+    environment:  # Define las variables de entorno para el contenedor.
+      - TZ=${TZ}  # Establece la zona horaria del contenedor.
+      - PUID=${PUID}  # Establece el ID de usuario del proceso dentro del contenedor.
+      - PGID=${PGID}  # Establece el ID de grupo del proceso dentro del contenedor.
+    ports:  # Publica el puerto 8686 del contenedor en el puerto 8686 del host.
       - "8686:8686"
-    restart: unless-stopped
+    restart: unless-stopped  # Reinicia el contenedor automáticamente a menos que se detenga explícitamente.
 
   prowlarr:
-    image: lscr.io/linuxserver/prowlarr:latest
-    container_name: prowlarr
-    networks:
+    image: lscr.io/linuxserver/prowlarr:latest  # Especifica la imagen de Docker para Prowlarr.
+    container_name: prowlarr  # Asigna el nombre "prowlarr" al contenedor.
+    networks:  # Conecta el contenedor a la red "media".
       - media
-    volumes:
-      - /home/carlos/docker/prowlarr/config:/config
-      - ${DESCARGAS}:/downloads
-    environment:
-      - TZ=${TZ}
-      - PUID=${PUID}
-      - PGID=${PGID}
-    ports:
+    volumes:  # Define los volúmenes para montar directorios locales en el contenedor.
+      - ${DOCKER}/prowlarr/config:/config  # Monta el directorio de configuración de Prowlarr en /config.
+      - ${DESCARGAS}:/downloads  # Monta el directorio de descargas en /downloads.
+    environment:  # Define las variables de entorno para el contenedor.
+      - TZ=${TZ}  # Establece la zona horaria del contenedor.
+      - PUID=${PUID}  # Establece el ID de usuario del proceso dentro del contenedor.
+      - PGID=${PGID}  # Establece el ID de grupo del proceso dentro del contenedor.
+    ports:  # Publica el puerto 9696 del contenedor en el puerto 9696 del host.
       - "9696:9696"
-    restart: unless-stopped
+    restart: unless-stopped  # Reinicia el contenedor automáticamente a menos que se detenga explícitamente.
 
   readarr:
-    image: lscr.io/linuxserver/readarr:develop
-    container_name: readarr
-    networks:
+    image: lscr.io/linuxserver/readarr:develop  # Especifica la imagen de Docker para Readarr (versión de desarrollo).
+    container_name: readarr  # Asigna el nombre "readarr" al contenedor.
+    networks:  # Conecta el contenedor a la red "media".
       - media
-    volumes:
-      - /home/carlos/docker/readarr/config:/config
-      - ${DESCARGAS}:/downloads
-    environment:
-      - TZ=${TZ}
-      - PUID=${PUID}
-      - PGID=${PGID}
-    ports:
+    volumes:  # Define los volúmenes para montar directorios locales en el contenedor.
+      - ${DOCKER}/readarr/config:/config  # Monta el directorio de configuración de Readarr en /config.
+      - ${DESCARGAS}:/downloads  # Monta el directorio de descargas en /downloads.
+    environment:  # Define las variables de entorno para el contenedor.
+      - TZ=${TZ}  # Establece la zona horaria del contenedor.
+      - PUID=${PUID}  # Establece el ID de usuario del proceso dentro del contenedor.
+      - PGID=${PGID}  # Establece el ID de grupo del proceso dentro del contenedor.
+    ports:  # Publica el puerto 8787 del contenedor en el puerto 8787 del host.
       - "8787:8787"
-    restart: unless-stopped
+    restart: unless-stopped  # Reinicia el contenedor automáticamente a menos que se detenga explícitamente.
 
   watchtower:
-    image: containrrr/watchtower:latest
-    container_name: watchtower
-    networks:
+    image: containrrr/watchtower:latest  # Especifica la imagen de Docker para Watchtower.
+    container_name: watchtower  # Asigna el nombre "watchtower" al contenedor.
+    networks:  # Conecta el contenedor a la red "media".
       - media
-    environment:
-      - WATCHTOWER_POLL_INTERVAL=172800  # 2 days in seconds (60*60*24*2)
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock  # Needed for Watchtower to access Docker API
-    restart: unless-stopped
-
+    environment:  # Define las variables de entorno para el contenedor.
+      - WATCHTOWER_POLL_INTERVAL=172800  # Establece el intervalo de verificación de actualizaciones a 2 días (en segundos).
+    volumes:  # Define los volúmenes para montar directorios locales en el contenedor.
+      - /var/run/docker.sock:/var/run/docker.sock  # Monta el socket de Docker para que Watchtower pueda acceder al API de Docker.
+    restart: unless-stopped  # Reinicia el contenedor automáticamente a menos que se detenga explícitamente.
 
   pinepods_db:
-    container_name: DB_Pinepods
-    image: postgres:latest
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      PGDATA: /var/lib/postgresql/data/pgdata
-    volumes:
-      - /home/carlos/docker/pinepods/pgdata:/var/lib/postgresql/data
-    ports:
+    container_name: DB_Pinepods  # Asigna el nombre "DB_Pinepods" al contenedor.
+    image: postgres:latest  # Especifica la imagen de Docker para PostgreSQL.
+    environment:  # Define las variables de entorno para el contenedor.
+      POSTGRES_DB: ${POSTGRES_DB}  # Establece el nombre de la base de datos PostgreSQL.
+      POSTGRES_USER: ${POSTGRES_USER}  # Establece el nombre de usuario de PostgreSQL.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}  # Establece la contraseña de PostgreSQL.
+      PGDATA: /var/lib/postgresql/data/pgdata  # Especifica el directorio de datos de PostgreSQL.
+    volumes:  # Define los volúmenes para montar directorios locales en el contenedor.
+      - ${DOCKER}/pinepods/pgdata:/var/lib/postgresql/data  # Monta el directorio de datos de Pinepods en el directorio de datos de PostgreSQL.
+    ports:  # Publica el puerto 5432 del contenedor en el puerto 5432 del host.
       - "5432:5432"
-    restart: unless-stopped
+    restart: unless-stopped  # Reinicia el contenedor automáticamente a menos que se detenga explícitamente.
 
   valkey:
-    container_name: Valkey_Pinepods
-    image: valkey/valkey:8-alpine
-    ports:
+    container_name: Valkey_Pinepods  # Asigna el nombre "Valkey_Pinepods" al contenedor.
+    image: valkey/valkey:8-alpine  # Especifica la imagen de Docker para Valkey (una base de datos en memoria).
+    ports:  # Publica el puerto 6379 del contenedor en el puerto 6379 del host.
       - "6379:6379"
-    restart: unless-stopped
+    restart: unless-stopped  # Reinicia el contenedor automáticamente a menos que se detenga explícitamente.
 
   pinepods:
-    container_name: Pinepods
-    image: madeofpendletonwool/pinepods:latest
-    ports:
+    container_name: Pinepods  # Asigna el nombre "Pinepods" al contenedor.
+    image: madeofpendletonwool/pinepods:latest  # Especifica la imagen de Docker para Pinepods.
+    ports:  # Publica el puerto 8040 del contenedor en el puerto 8040 del host.
       - "8040:8040"
-    environment:
+    environment:  # Define las variables de entorno para el contenedor.
       # Basic Server Info
-      SEARCH_API_URL: 'https://search.pinepods.online/api/search'
-      PEOPLE_API_URL: 'https://people.pinepods.online'
+      SEARCH_API_URL: 'https://search.pinepods.online/api/search'  # URL de la API de búsqueda de Pinepods.
+      PEOPLE_API_URL: 'https://people.pinepods.online'  # URL de la API de personas de Pinepods.
       # Default Admin User Information
-      USERNAME: ${USERNAME}
-      PASSWORD: ${PASSWORD}
-      FULLNAME: Mis Podcasts
-      EMAIL: user@pinepods.online
+      USERNAME: ${USERNAME}  # Nombre de usuario del administrador predeterminado.
+      PASSWORD: ${PASSWORD}  # Contraseña del administrador predeterminado.
+      FULLNAME: Mis Podcasts  # Nombre completo del administrador predeterminado.
+      EMAIL: user@pinepods.online  # Correo electrónico del administrador predeterminado.
       # Database Vars
-      DB_TYPE: postgresql
-      DB_HOST: pinepods_db
-      DB_PORT: 5432
-      DB_USER: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
-      DB_NAME: ${POSTGRES_DB}
+      DB_TYPE: postgresql  # Tipo de base de datos (PostgreSQL).
+      DB_HOST: pinepods_db  # Nombre de host de la base de datos.
+      DB_PORT: 5432  # Puerto de la base de datos.
+      DB_USER: ${POSTGRES_USER}  # Nombre de usuario de la base de datos.
+      DB_PASSWORD: ${POSTGRES_PASSWORD}  # Contraseña de la base de datos.
+      DB_NAME: ${POSTGRES_DB}  # Nombre de la base de datos.
       # Valkey Settings
-      VALKEY_HOST: valkey
-      VALKEY_PORT: 6379
+      VALKEY_HOST: valkey  # Nombre de host de Valkey.
+      VALKEY_PORT: 6379  # Puerto de Valkey.
       # Enable or Disable Debug Mode for additional Printing
-      DEBUG_MODE: false
-    volumes:
+      DEBUG_MODE: false  # Desactiva el modo de depuración.
+    volumes:  # Define los volúmenes para montar directorios locales en el contenedor.
       # Mount the download and backup locations on the server
-      - /home/carlos/docker/pinepods/podcasts:/opt/pinepods/downloads
-      - /home/carlos/docker/pinepods/backups:/opt/pinepods/backups
-    restart: unless-stopped
-    depends_on:
-      - pinepods_db
-      - valkey
+      - ${DOCKER}/pinepods/podcasts:/opt/pinepods/downloads  # Monta el directorio de podcasts en /opt/pinepods/downloads.
+      - ${DOCKER}/pinepods/backups:/opt/pinepods/backups  # Monta el directorio de copias de seguridad en /opt/pinepods/backups.
+    restart: unless-stopped  # Reinicia el contenedor automáticamente a menos que se detenga explícitamente.
+    depends_on:  # Define las dependencias del contenedor.
+      - pinepods_db  # Depende del contenedor pinepods_db.
+      - valkey  # Depende del contenedor valkey.
 
   lazylibrarian:
-    image: lscr.io/linuxserver/lazylibrarian:latest
-    container_name: lazylibrarian
-    environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
-      - DOCKER_MODS=linuxserver/mods:universal-calibre|linuxserver/mods:lazylibrarian-ffmpeg #optional
-    volumes:
-      - ${DOCKER}/docker/lazylibrarian/data:/config
-      - ${DOCKER}/lazylibrarian/downloads/:/downloads
-      - ${DOCKER}/lazylibrarian/books:/books #optional
-    ports:
+    image: lscr.io/linuxserver/lazylibrarian:latest  # Especifica la imagen de Docker para LazyLibrarian.
+    container_name: lazylibrarian  # Asigna el nombre "lazylibrarian" al contenedor.
+    environment:  # Define las variables de entorno para el contenedor.
+      - PUID=${PUID}  # Establece el ID de usuario del proceso dentro del contenedor.
+      - PGID=${PGID}  # Establece el ID de grupo del proceso dentro del contenedor.
+      - TZ=${TZ}  # Establece la zona horaria del contenedor.
+      - DOCKER_MODS=linuxserver/mods:universal-calibre|linuxserver/mods:lazylibrarian-ffmpeg #optional  # Habilita mods opcionales para Calibre y ffmpeg.
+    volumes:  # Define los volúmenes para montar directorios locales en el contenedor.
+      - ${DOCKER}/docker/lazylibrarian/data:/config  # Monta el directorio de configuración de LazyLibrarian en /config.
+      - ${DOCKER}/lazylibrarian/downloads/:/downloads  # Monta el directorio de descargas en /downloads.
+      - ${DOCKER}/lazylibrarian/books:/books #optional  # Monta el directorio de libros en /books (opcional).
+    ports:  # Publica el puerto 5299 del contenedor en el puerto 5299 del host.
       - "5299:5299"
-    restart: unless-stopped
+    restart: unless-stopped  # Reinicia el contenedor automáticamente a menos que se detenga explícitamente.
 
 networks:
   media:
-    driver: bridge
+    driver: bridge  # Define una red puente llamada "media" para la comunicación entre contenedores.
