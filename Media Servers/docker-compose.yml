@@ -172,7 +172,16 @@ services:
     networks:  # Conecta el contenedor a la red "media".
       - media
     environment:  # Define las variables de entorno para el contenedor.
-      - WATCHTOWER_POLL_INTERVAL=172800  # Establece el intervalo de verificación de actualizaciones a 2 días (en segundos).
+      - WATCHTOWER_CLEANUP: true # Indica si Watchtower debe limpiar las imágenes antiguas después de actualizar un contenedor.
+      - WATCHTOWER_SCHEDULE: "0 0 9 * * 0" # Define la programación cron para que Watchtower revise y actualice los contenedores. En este caso, se ejecutará a las 9:00 AM todos los domingos.
+      - WATCHTOWER_ROLLING_RESTART: true # Especifica si Watchtower debe reiniciar los contenedores después de actualizarlos.
+      - WATCHTOWER_TIMEOUT: 30s # Establece el tiempo de espera (timeout) para las operaciones de Watchtower en 30 segundos.
+      - WATCHTOWER_NOTIFICATIONS: email # Habilita las notificaciones por correo electrónico.
+      - WATCHTOWER_NOTIFICATION_EMAIL_SERVER: mail.nosolohacking.info # Define el servidor de correo electrónico (SMTP) que se utilizará para enviar las notificaciones.
+      - WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PORT: 465 # Especifica el puerto del servidor de correo electrónico (generalmente 465 para SMTPS).
+      - WATCHTOWER_NOTIFICATION_EMAIL_FROM: alertas@nosolohacking.info # Indica la dirección de correo electrónico del remitente de las notificaciones.
+      - WATCHTOWER_NOTIFICATION_EMAIL_TO: carlos@nosolohacking.info # Define la dirección de correo electrónico del destinatario de las notificaciones.
+      - WATCHTOWER_NOTIFICATION_EMAIL_DELAY: 5 # Establece un retraso de 5 segundos entre el envío de notificaciones.
     volumes:  # Define los volúmenes para montar directorios locales en el contenedor.
       - /var/run/docker.sock:/var/run/docker.sock  # Monta el socket de Docker para que Watchtower pueda acceder al API de Docker.
     restart: unless-stopped  # Reinicia el contenedor automáticamente a menos que se detenga explícitamente.
