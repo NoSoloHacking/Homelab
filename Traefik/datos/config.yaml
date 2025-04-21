@@ -1,0 +1,37 @@
+http:
+  middlewares:
+    default-security-headers:                    # Define un middleware llamado 'default-security-headers'
+      headers:                                   # Configura los encabezados HTTP
+        customBrowserXSSValue: 0                 # Establece un valor personalizado para el encabezado X-XSS-Protection (en este caso, deshabilitado o con un valor específico)
+        contentTypeNosniff: true                 # Añade el encabezado X-Content-Type-Options con el valor 'nosniff' para prevenir la detección incorrecta del tipo de contenido
+        forceSTSHeader: true                     # Fuerza la adición del encabezado Strict-Transport-Security incluso en conexiones HTTP
+        frameDeny: false                         # Establece el encabezado X-Frame-Options en 'deny' (impide que la página se muestre en un iframe) - en este caso está en 'false', lo que NO lo impide
+        referrerPolicy: "strict-origin-when-cross-origin" # Establece la política de referer para controlar qué información de referencia se envía
+        stsIncludeSubdomains: true               # Añade la directiva 'includeSubdomains' al encabezado Strict-Transport-Security para aplicar la política a todos los subdominios
+        stsPreload: true                         # Añade la directiva 'preload' al encabezado Strict-Transport-Security para incluir el dominio en la lista de precarga del navegador
+        stsSeconds: 31536000                     # Establece la duración máxima (en segundos) del encabezado Strict-Transport-Security (aquí, aproximadamente 1 año)
+        contentSecurityPolicy: "default-src 'self'" # Define la política de seguridad de contenido, permitiendo solo recursos del mismo origen por defecto
+        customRequestHeaders:                  # Define encabezados de solicitud personalizados
+          X-Forwarded-Proto: https               # Establece el encabezado X-Forwarded-Proto en 'https' para indicar que la solicitud original era HTTPS
+    https-redirectscheme:                      # Define un middleware llamado 'https-redirectscheme'
+      redirectScheme:                          # Configura la redirección de esquema
+        scheme: https                          # Redirige al esquema HTTPS
+        permanent: true                        # Realiza una redirección permanente (código 301)
+
+  routers:
+    portainer:                                 # Define un router llamado 'portainer'
+      entryPoints:                             # Define los puntos de entrada que este router escucha
+        - "https"                             # Escucha en el entrypoint llamado 'https'
+      rule: "Host(`portainer.tu.dominio.aquí`)" # Define la regla para que este router coincida con las solicitudes al host 'portainer.tu.dominio.aquí'
+      middlewares:                             # Aplica los siguientes middlewares a este router
+        - default-security-headers            # Aplica el middleware 'default-security-headers'
+        - https-redirectscheme                # Aplica el middleware 'https-redirectscheme'
+      tls: {}                                  # Habilita TLS para este router (Traefik gestionará los certificados)
+      service: portainer                       # Asocia este router con el servicio llamado 'portainer'
+
+  services:
+    portainer:                                 # Define un servicio llamado 'portainer'
+      loadBalancer:                            # Configura el balanceador de carga para este servicio
+        servers:                               # Define los servidores backend
+          - url: "https://192.168.1.122:9443" # Define la URL del servidor backend de Portainer
+        passHostHeader: true                   # Pasa el encabezado Host original a la solicitud al servidor backend

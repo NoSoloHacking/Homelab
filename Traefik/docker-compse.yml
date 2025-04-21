@@ -1,0 +1,53 @@
+secrets:
+  cf-token: # Define un secreto llamado 'cf-token'
+    file: ./traefik/cloudflare_token.txt # Indica la ruta al archivo que contiene el valor del secreto (token de Cloudflare)
+
+services:
+  traefik:
+    image: traefik:latest # Especifica la imagen de Docker para el contenedor de Traefik (la última versión o una versión específica)
+    container_name: traefik # Asigna el nombre 'traefik' a este contenedor
+    restart: unless-stopped # Configura el reinicio automático del contenedor a menos que se detenga explícitamente
+    security_opt:
+      - no-new-privileges:true # Opción de seguridad para evitar que el contenedor adquiera nuevos privilegios
+    secrets:
+      - cf-token # Monta el secreto 'cf-token' definido anteriormente en el contenedor
+    env_file:
+      - /Tu/Ruta/Al/Archivo/.env # # Especifica la ruta al archivo .env que contiene variables de entorno (incluyendo la contraseña del dashboard)
+    ports:
+      - 80:80    # Mapea el puerto 80 del host al puerto 80 del contenedor (HTTP)
+      - 443:443  # Mapea el puerto 443 del host al puerto 443 del contenedor (HTTPS)
+      # - 5050:5050 # optional # Ejemplo de mapeo de un puerto opcional
+      # - 3353:3353 # optional # Ejemplo de mapeo de otro puerto opcional
+    environment:
+      - TRAEFIK_DASHBOARD_CREDENTIALS=${CREDENCIALES_DASHBOARD} # Define la variable de entorno para las credenciales del dashboard de Traefik, tomando su valor del archivo .env
+      # - CF_API_EMAIL=your@email.com # Cloudflare email # Ejemplo comentado de una variable de entorno para el email de Cloudflare
+      # - CF_DNS_API_TOKEN=YOUR-TOKEN # Cloudflare API Token # Ejemplo comentado de una variable de entorno para el token de la API de Cloudflare
+      - CF_DNS_API_TOKEN_FILE=/run/secrets/cf-token # Define la ruta dentro del contenedor donde se montará el secreto del token de Cloudflare
+      # token file is the proper way to do it # Comentario indicando que usar un archivo de secreto es la forma recomendada
+    volumes:
+      - /etc/localtime:/etc/localtime:ro #Monta la información de zona horaria del host en el contenedor
+      - /var/run/docker.sock:/var/run/docker.sock:ro #Otorga acceso al socket de Docker para descubrimiento de servicios
+      - ./traefik/datos/traefik.yaml:/traefik.yaml:ro #Monta el archivo de configuración de Traefik
+      - ./traefik/datos/acme.json:/acme.json #Monta volumen para almacenar certificados
+      - ./datos/config.yaml:/config.yaml:ro #Lo descomentaremos para usar nuestro Proxmox
+      - ./traefik/datos/logs:/var/log/traefik #Monta volumen para almacenar logs
+    labels:
+      - "traefik.enable=true" # Habilita el servicio Traefik
+      - "traefik.http.routers.traefik.entrypoints=http" # Define el punto de entrada para el panel de Traefik (usa HTTP)
+      - "traefik.http.routers.traefik.rule=Host(`traefik-dashboard.tu.dominio.aquí`)" # Define una regla para enrutar el tráfico de `traefik-dashboard.tu.dominio.aquí` al servicio Traefik
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=${CREDENCIALES_DASHBOARD}" # Define autenticación básica para el panel de Traefik (reemplazar con el nombre real de la variable)
+      - "traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https" # Define middleware para redirigir el tráfico HTTP a HTTPS
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https" # Define middleware para establecer la cabecera X-Forwarded-Proto para reconocimiento HTTPS
+      - "traefik.http.routers.traefik.middlewares=traefik-https-redirect" # Asocia el middleware de redirección con el router Traefik
+      - "traefik.http.routers.traefik-secure.entrypoints=https" # Define un router seguro para tráfico HTTPS
+      - "traefik.http.routers.traefik-secure.rule=Host(`traefik-dashboard.tu.dominio.aquí`)" # Define una regla para el router seguro (misma que el router HTTP)
+      - "traefik.http.routers.traefik-secure.middlewares=traefik-auth" # Asocia el middleware de autenticación con el router seguro
+      - "traefik.http.routers.traefik-secure.tls=true" # Habilita TLS para el router seguro
+      - "traefik.http.routers.traefik-secure.tls.certresolver=cloudflare" # Utiliza el resolvedor de certificados de Cloudflare
+      - "traefik.http.routers.traefik-secure.tls.domains[0].main=tu.dominio.aquí" # Define el dominio principal y los nombres alternativos (SANs) para el certificado
+      - "traefik.http.routers.traefik-secure.tls.domains[0].sans=*.tu.dominio.aquí" # Define el dominio principal y los nombres alternativos (SANs) para el certificado
+      - "traefik.http.routers.traefik-secure.service=api@internal" # Asocia el router seguro con el servicio interno "api" (suponiendo que tienes un servicio llamado "api")
+
+networks:
+  proxy: # Define una red Docker llamada 'proxy'
+    

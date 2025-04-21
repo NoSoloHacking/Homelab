@@ -1,0 +1,54 @@
+api:
+  dashboard: true   # Habilita el dashboard web de Traefik
+  debug: true       # Habilita el modo de depuración para obtener información más detallada en los logs
+
+entryPoints:
+  http:
+    address: ":80"  # Define el punto de entrada HTTP que escucha en el puerto 80
+    http:
+      # middlewares: # descomentar si usáis crowdsec
+      #   - crowdsec-bouncer@file
+      redirections: # Configura las redirecciones para este punto de entrada
+        entrypoint:
+          to: https   # Redirige el tráfico a otro punto de entrada llamado 'https'
+          scheme: https # El esquema de la redirección es HTTPS
+  https:
+    address: ":443" # Define el punto de entrada HTTPS que escucha en el puerto 443
+    # http:
+    #   middlewares: # descomentar si usáis crowdsec
+    #     - crowdsec-bouncer@file
+  # tcp:
+  #  address: ":5050" # Define un punto de entrada TCP que escucha en el puerto 5050 (no utilizado en este caso)
+  # apis:
+  #  address: ":373"  # Define un punto de entrada para APIs que escucha en el puerto 373 (no utilizado en este caso)
+
+serversTransport:
+  insecureSkipVerify: true # Omite la verificación del certificado del servidor backend (útil en algunos escenarios, pero generalmente no recomendado para producción)
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock" # Define el endpoint para comunicarse con el socket de Docker (permite a Traefik descubrir contenedores)
+    exposedByDefault: false                # Indica que los contenedores no están expuestos a Traefik a menos que se especifique explícitamente con etiquetas
+  file:
+    filename: treafik/config/config.yaml # Especifica la ruta al archivo de configuración de Traefik en formato YAML o TOML
+
+certificatesResolvers:
+  cloudflare:
+    acme:
+      # caServer: https://acme-v02.api.letsencrypt.org/directory # Servidor de la API de Let's Encrypt para producción (obtención de certificados reales)
+      # caServer: https://acme-staging-v02.api.letsencrypt.org/directory # Servidor de la API de Let's Encrypt para pruebas (obtención de certificados de prueba)
+      email: tu@EmailAqui.com # Dirección de correo electrónico para registrar con ACME (Let's Encrypt)
+      storage: acme.json                  # Ruta al archivo donde Traefik almacenará la información de los certificados ACME
+      dnsChallenge:                     # Configuración para el desafío DNS (utilizado para verificar la propiedad del dominio)
+        provider: cloudflare              # Indica que se utilizará el proveedor DNS de Cloudflare
+        # disablePropagationCheck: true # Algunos usuarios de Cloudflare encuentran que esto resuelve problemas de propagación de DNS
+        resolvers:                        # Servidores DNS a utilizar para la verificación del desafío
+          - "1.1.1.1:53"
+          - "1.0.0.1:53"
+
+log:
+  level: "INFO"                  # Establece el nivel de detalle de los logs de Traefik (INFO, DEBUG, WARN, ERROR, FATAL)
+  filePath: "/var/log/traefik/traefik.log" # Ruta al archivo donde se escribirán los logs de Traefik
+
+accessLog:
+  filePath: "/var/log/traefik/access.log"   # Ruta al archivo donde se escribirán los logs de acceso (registrando cada petición)
