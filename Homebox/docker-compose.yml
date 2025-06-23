@@ -1,0 +1,39 @@
+services:
+  homebox:
+    image: ghcr.io/sysadminsmedia/homebox:latest  # Imagen oficial más reciente de Homebox
+#   image: ghcr.io/sysadminsmedia/homebox:latest-rootless  # Alternativa sin root, más segura
+    container_name: homebox  # Nombre del contenedor personalizado
+    restart: unless-stopped  # Reinicia el contenedor a menos que se detenga manualmente
+    environment:
+    environment:
+      - HBOX_LOG_LEVEL=${HOMEBOX_LOG_LEVEL}  # Nivel de log (debug, info, warn...), definido en el archivo .env
+      - HBOX_LOG_FORMAT=${HOMEBOX_LOG_FORMAT}  # Formato del log (text o json), definido en el archivo .env
+      - HBOX_WEB_MAX_UPLOAD_SIZE=${HOMEBOX_WEB_MAX_UPLOAD_SIZE}  # Tamaño máximo de subida vía web, definido en .env
+      - HBOX_MAILER_HOST=${HOMEBOX_SMTP_ADDRESS}  # Dirección del servidor SMTP, tomada del archivo .env
+      - HBOX_MAILER_PORT=${HOMEBOX_SMTP_PORT}  # Puerto del SMTP, definido en .env
+      - HBOX_MAILER_USERNAME=${HOMEBOX_SMTP_USER_NAME}  # Usuario para el servidor SMTP, desde .env
+      - HBOX_MAILER_PASSWORD=${HOMEBOX_SMTP_PASSWORD}  # Contraseña SMTP, almacenada en el archivo .env
+      - HBOX_MAILER_FROM=${HOMEBOX_EMAIL_FROM}  # Correo del remitente en los emails, definido en .env
+    volumes:
+      - homebox-data:/data/  # Monta un volumen persistente en /data del contenedor
+    ports:
+      - 3100:7745  # Expone el puerto 7745 del contenedor en el 3100 del host
+    labels:
+      - "traefik.docker.network=traefik-network"  # Red de Traefik a la que se conecta este servicio
+      - "traefik.enable=true"  # Habilita Traefik para este contenedor
+      - "traefik.http.routers.homebox.entrypoints=http"  # Punto de entrada HTTP
+      - "traefik.http.routers.homebox.rule=Host(`homebox.local.nshlab.de`)"  # Regla de host para enrutar
+      - "traefik.http.middlewares.homebox-https-redirect.redirectscheme.scheme=https"  # Redirección automática a HTTPS
+      - "traefik.http.routers.homebox.middlewares=homebox-https-redirect"  # Aplica la redirección a HTTPS
+      - "traefik.http.routers.homebox-secure.entrypoints=https"  # Punto de entrada HTTPS
+      - "traefik.http.routers.homebox-secure.rule=Host(`homebox.local.nshlab.de`)"  # Regla segura de host HTTPS
+      - "traefik.http.routers.homebox-secure.tls=true"  # Habilita TLS para HTTPS
+      - "traefik.http.routers.homebox-secure.service=homebox"  # Servicio al que se conecta esta ruta segura
+      - "traefik.http.services.homebox.loadbalancer.server.port=7745"  # Puerto interno que maneja Homebox
+      - "traefik.docker.network=proxy"  # Traefik debe usar esta red Docker llamada "proxy"
+networks:
+  proxy:
+    external: false  # Red Docker local (no externa)
+volumes:
+  homebox-data:
+    driver: local  # Tipo de volumen local, persistente
